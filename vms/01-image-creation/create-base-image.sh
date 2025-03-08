@@ -76,8 +76,8 @@ if [ -z "${ISO_PATH}" ]; then
 fi
 
 # validation would be awesome.... :D
-
-PUBLIC_KEY=$(cat $PUBLIC_KEY_FILE)
+UNCLEANED_PUBLIC_KEY=$(cat $PUBLIC_KEY_FILE)
+PUBLIC_KEY=$(echo "$UNCLEANED_PUBLIC_KEY" | awk '{print $1, $2}')
 
 TEMP_DIR_RANDOM=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 4; echo)
 TEMP_DIR=$(echo "temp-$TEMP_DIR_RANDOM")
