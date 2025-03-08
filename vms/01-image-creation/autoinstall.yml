@@ -1,0 +1,45 @@
+#cloud-config
+autoinstall:
+  version: 1
+
+  # use my timezone even though I probably should use UTC....
+  locale: "en_US.UTF-8"
+  timezone: "Europe/Berlin"
+
+  # make sure to use the newest installer
+  refresh-installer:
+    update: true
+
+  # install all the available drivers
+  drivers:
+    install: true
+
+  # initialize the base account
+  # password is disabled
+  identity:
+    hostname: aecloud
+    username: aecloud-admin
+    password: "*"
+
+  # allow ssh logins but disbale password login
+  ssh:
+    install-server: yes
+    allow-pw: false
+    authorized-keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4Z4Nvv9m93BQmZKO2vRtAsC+P0MV4443VNA7XFJNw/
+
+  # use the standard network
+  # I should probably provide a LUKS passphase for encryption at rest
+  storage:
+    layout:
+      name: lvm
+
+  # update the entire system
+  updates: all
+
+  # install cloud-init for further setups
+  packages:
+    - cloud-init
+
+  # done
+  shutdown: poweroff
