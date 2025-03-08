@@ -21,6 +21,14 @@ autoinstall:
     username: aecloud-admin
     password: "*"
 
+  # allow passwordless sudo -- alternatively provide password above...
+  user-data:
+    users:
+    - name: aecloud-admin
+      groups: sudo
+      shell: /bin/bash
+      sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+
   # allow ssh logins but disbale password login
   ssh:
     install-server: yes

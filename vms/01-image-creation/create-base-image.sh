@@ -10,7 +10,7 @@ BASE_IMAGE_SIZE=7.5G
 mkdir -p $OUT_DIR/temp
 mkdir -p $OUT_DIR/temp/seed # used to create the seed.iso
 mkdir -p $OUT_DIR/temp/iso-mount # mount point to copy vmlinuz and initrd
-mkdir -p $OUT_DIR/temp/iso-copies # use to temporary save vmlinuz and initrd
+mkdir -p $OUT_DIR/temp/iso-copies # use to temporarily save vmlinuz and initrd
 
 # create the iso with the autoinstall
 touch $OUT_DIR/temp/seed/meta-data
@@ -20,6 +20,9 @@ genisoimage -output $OUT_DIR/temp/seed.iso -volid CIDATA -joliet -rock $OUT_DIR/
 rm -rf $OUT_DIR/temp/seed
 
 # mount the ubuntu iso to get access to vmlinuz and initrd
+# these two object files allow to add kernel arguments (autoinstall)
+# initrd is the initial RAM layout loaded into -- you guessed it -- the RAM :)
+# vmlinuz is the kernel
 sudo mount -o loop $ISO_PATH $OUT_DIR/temp/iso-mount
 cp $OUT_DIR/temp/iso-mount/casper/vmlinuz $OUT_DIR/temp/iso-copies/
 cp $OUT_DIR/temp/iso-mount/casper/initrd $OUT_DIR/temp/iso-copies/
