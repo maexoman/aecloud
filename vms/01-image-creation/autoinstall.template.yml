@@ -1,0 +1,52 @@
+#cloud-config
+autoinstall:
+  version: 1
+
+  locale: "en_US.UTF-8"
+  timezone: "Etc/UTC"
+
+  # make sure to use the newest installer
+  refresh-installer:
+    update: true
+
+  # install all the available drivers
+  drivers:
+    install: true
+
+  # initialize the base account
+  # password is disabled
+  identity:
+    hostname: __HOSTNAME__
+    username: __USERNAME__
+    password: "*"
+
+  # allow passwordless sudo -- alternatively provide password above...
+  user-data:
+    users:
+    - name: __USERNAME__
+      groups: sudo
+      shell: /bin/bash
+      sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+
+  # allow ssh logins but disbale password login
+  ssh:
+    install-server: yes
+    allow-pw: false
+    authorized-keys:
+      - __PUBLIC_KEY__
+
+  # use the standard network
+  # I should probably provide a LUKS passphase for encryption at rest
+  storage:
+    layout:
+      name: lvm
+
+  # update the entire system
+  updates: all
+
+  # install cloud-init for further setups
+  packages:
+    - cloud-init
+
+  # done
+  shutdown: poweroff
