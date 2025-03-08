@@ -2,9 +2,8 @@
 autoinstall:
   version: 1
 
-  # use my timezone even though I probably should use UTC....
   locale: "en_US.UTF-8"
-  timezone: "Europe/Berlin"
+  timezone: "Etc/UTC"
 
   # make sure to use the newest installer
   refresh-installer:
@@ -17,14 +16,14 @@ autoinstall:
   # initialize the base account
   # password is disabled
   identity:
-    hostname: aecloud
-    username: aecloud-admin
+    hostname: __HOSTNAME__
+    username: __USERNAME__
     password: "*"
 
   # allow passwordless sudo -- alternatively provide password above...
   user-data:
     users:
-    - name: aecloud-admin
+    - name: __USERNAME__
       groups: sudo
       shell: /bin/bash
       sudo: ["ALL=(ALL) NOPASSWD:ALL"]
@@ -34,7 +33,7 @@ autoinstall:
     install-server: yes
     allow-pw: false
     authorized-keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4Z4Nvv9m93BQmZKO2vRtAsC+P0MV4443VNA7XFJNw/
+      - __PUBLIC_KEY__
 
   # use the standard network
   # I should probably provide a LUKS passphase for encryption at rest
