@@ -15,6 +15,7 @@ while [[ $# -gt 0 ]]; do
 	  echo "here are the allowed options:"
 	  echo " --public-key-file >> path to the public key file"
 	  echo " --iso >> path to the ISO file"
+	  echo " --mac >> mac address of new vm"
 	  echo " --hostname >> hostname for the new machine"
 	  echo " --username >> username for the new machine"
 	  echo " -o,--out >> path on where to store the image"
@@ -30,6 +31,11 @@ while [[ $# -gt 0 ]]; do
 	  ;;
 	--iso)
 	  ISO_PATH="$2"
+	  shift # past argument
+	  shift # past value
+	  ;;
+	--mac)
+	  MAC_ADDRESS="$2"
 	  shift # past argument
 	  shift # past value
 	  ;;
@@ -71,7 +77,11 @@ if [ -z "${PUBLIC_KEY_FILE}" ]; then
 	exit 1
 fi
 if [ -z "${ISO_PATH}" ]; then
-	echo "Please provide the --iso-path"
+	echo "Please provide the --iso"
+	exit 1
+fi
+if [ -z "${MAC_ADDRESS}" ]; then
+	echo "Please provide the --mac"
 	exit 1
 fi
 
@@ -94,14 +104,24 @@ mkdir -p $TEMP_DIR/workdir/iso-mount # mount point to copy vmlinuz and initrd
 mkdir -p $TEMP_DIR/workdir/iso-copies # use to temporarily save vmlinuz and initrd
 
 # create the iso with the autoinstall
-touch $TEMP_DIR/workdir/seed/meta-data
-cp autoinstall.template.yml $TEMP_DIR/workdir/seed/user-data
+cp templates/autoinstall.template.yml $TEMP_DIR/workdir/seed/autoinstall
+cp templates/meta-data.template.yml $TEMP_DIR/workdir/seed/meta-data
+cp templates/vendor-data.template.yml $TEMP_DIR/workdir/seed/vendor-data
 
 # replace the template strings
+
+# the autoinstall script only has HOSTNAME
+sed -i -e "s|__HOSTNAME__|$HOSTNAME|" $TEMP_DIR/workdir/seed/autoinstall
+
+# meta-data contains only the mac address and the hostname
+sed -i -e "s|__HOSTNAME__|$HOSTNAME|" $TEMP_DIR/workdir/seed/meta-data
+sed -i -e "s|__MAC_ADDRESS__|$MAC_ADDRESS|" $TEMP_DIR/workdir/seed/meta-data
+
+# the vendordata contains all the user data
 # the public key might contain a / meaning it would end the basic sed s/foo/bar/ -> use # instead
-sed -i -e "s#__HOSTNAME__#$HOSTNAME#" $TEMP_DIR/workdir/seed/user-data
-sed -i -e "s#__USERNAME__#$USERNAME#" $TEMP_DIR/workdir/seed/user-data
-sed -i -e "s#__PUBLIC_KEY__#$PUBLIC_KEY#" $TEMP_DIR/workdir/seed/user-data
+sed -i -e "s|__HOSTNAME__|$HOSTNAME|" $TEMP_DIR/workdir/seed/vendor-data
+sed -i -e "s|__USERNAME__|$USERNAME|" $TEMP_DIR/workdir/seed/vendor-data
+sed -i -e "s|__PUBLIC_KEY__|$PUBLIC_KEY|" $TEMP_DIR/workdir/seed/vendor-data
 
 genisoimage -output $TEMP_DIR/workdir/seed.iso -volid CIDATA -joliet -rock $TEMP_DIR/workdir/seed
 
@@ -111,7 +131,7 @@ rm -rf $TEMP_DIR/workdir/seed
 # these two object files allow to add kernel arguments (autoinstall)
 # initrd is the initial RAM layout loaded into -- you guessed it -- the RAM :)
 # vmlinuz is the kernel
-sudo mount -o loop $ISO_PATH $TEMP_DIR/workdir/iso-mount
+sudo mount -ro loop $ISO_PATH $TEMP_DIR/workdir/iso-mount
 cp $TEMP_DIR/workdir/iso-mount/casper/vmlinuz $TEMP_DIR/workdir/iso-copies/
 cp $TEMP_DIR/workdir/iso-mount/casper/initrd $TEMP_DIR/workdir/iso-copies/
 sudo umount $TEMP_DIR/workdir/iso-mount

@@ -17,24 +17,8 @@ autoinstall:
   # password is disabled
   identity:
     hostname: __HOSTNAME__
-    username: __USERNAME__
+    username: tempuser
     password: "*"
-    ssh_authorized_keys:
-      - __PUBLIC_KEY__
-
-  # allow passwordless sudo -- alternatively provide password above...
-  # I know i could put my entire cloud-init setup in here. 
-  # This way it would be less flexible to do changes on a 'per-instance' basis.
-  # This would take longer as I'd allways have to reinstall.
-  user-data:
-    users:
-    - name: __USERNAME__
-      groups: sudo
-      shell: /bin/bash
-      sudo: ["ALL=(ALL) NOPASSWD:ALL"]
-      lock_passwd: true
-      ssh_authorized_keys:
-        - __PUBLIC_KEY__
 
   # allow ssh logins but disbale password login
   ssh:
@@ -46,6 +30,7 @@ autoinstall:
   storage:
     layout:
       name: lvm
+      sizing-policy: all
 
   # update the entire system
   updates: all
