@@ -24,14 +24,15 @@ You can also provide a hostname and username if you prefer.
 
 ```bash
 # the "simples" command:
-./create-bash-image.sh \
+./create-base-image.sh \
     --public-key-file ./path/to/key.pub \
-    --iso ./path/to/ubuntu.iso
+    --iso ./path/to/ubuntu.iso \
+    --mac AA:BB:CC:DD:EE:FF
 ```
 
 Or just see what else you can change:
 ```bash
-./create-bash-image.sh --help
+./create-base-image.sh --help
 ```
 
 Please use sensible values as they will not be validated yet.
