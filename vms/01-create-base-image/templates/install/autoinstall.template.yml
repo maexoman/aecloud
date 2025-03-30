@@ -1,0 +1,42 @@
+#cloud-config
+autoinstall:
+  version: 1
+
+  locale: "en_US.UTF-8"
+  timezone: "Etc/UTC"
+
+  # make sure to use the newest installer
+  refresh-installer:
+    update: true
+
+  # install all the available drivers
+  drivers:
+    install: true
+
+  # initialize the base account
+  # password is disabled
+  identity:
+    hostname: __HOSTNAME__
+    username: tempuser
+    password: "*"
+
+
+  # allow ssh logins but disbale password login
+  ssh:
+    install-server: yes
+    allow-pw: false
+
+  # use the standard network
+  # I should probably provide a LUKS passphase for encryption at rest
+  storage:
+    layout:
+      name: lvm
+      sizing-policy: all
+
+  # reenable cloud-init because autoinstall will disable it by default
+  late-commands:
+    - rm -rf /target/etc/cloud/cloud.cfg.d/*
+    - curtin in-target -- cloud-init clean
+
+  # done
+  shutdown: poweroff

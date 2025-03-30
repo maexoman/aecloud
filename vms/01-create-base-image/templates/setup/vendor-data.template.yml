@@ -1,0 +1,90 @@
+#cloud-config
+# Update the system and install important packages for hardening the system
+package_update: true
+package_upgrade: true
+packages:
+    - ufw
+    - fail2ban
+
+# Create the new User
+users:
+  - name: __USERNAME__
+    shell: /bin/bash
+    # the ssh server does not allow logging in into an account if its /etc/shadow entry has a ! as its password.
+    # im not locking the account but I'am setting the password to * so password login is disabled
+    passwd: "*"
+    lock_passwd: false
+    ssh_authorized_keys:
+      - __PUBLIC_KEY__
+    sudo: ALL=(ALL) NOPASSWD:ALL
+
+
+write_files:
+  # Replace the entire sshd config to have complete controll
+  - path: /etc/ssh/sshd_config
+    content: |
+      # Harden the login process
+      AllowUsers __USERNAME__ # Only allow the provided user
+      PermitRootLogin no # Disable root login
+
+      AuthenticationMethods publickey
+      PubkeyAuthentication yes # Allow public key auth
+      PasswordAuthentication no # Disable password login
+      PermitEmptyPasswords no # Disallow empty passwords just in case..
+
+      # Restrict cryptographic algorithms to 25519-based only
+      Ciphers chacha20-poly1305@openssh.com
+      KexAlgorithms curve25519-sha256
+      MACs hmac-sha2-256
+
+      MaxAuthTries 3 # Only allow a couple of wrong retries to mitigate brute force attacks
+      IgnoreRhosts yes # Disallow remote host login
+
+      # Harden the ssh server itself
+      Port 8822 # Its only security by obfuscation but im doing it anyway :)
+      Protocol 2 # Some old openSSH versions allow version 1 - I only want to allow 2
+      X11Forwarding no
+    owner: root:root
+    permissions: '0600'
+
+  # Create a basic fail2ban config to ban ips attempting brute-force logins
+  - path: /etc/fail2ban/jail.local
+    content: |
+      [DEFAULT]
+      bantime = 1h
+      findtime = 10m
+      maxretry = 3
+      backend = systemd
+      banaction = ufw
+      [sshd]
+      enabled = true
+    owner: root:root
+    permissions: '0644'
+
+runcmd:
+  # Remove roots password and lock it
+  - passwd -d root
+  - passwd -l root
+
+  # Delete tempuser created by autoinstall
+  - userdel -r tempuser || true 
+
+  # Only restart if the sshd_config is correct
+  - systemctl enable ssh
+  
+  # Self reference to the new hostname
+  - sed -i --posix "s|^\([[:space:]]*127\.0\.0\.1\).*|\1 __HOSTNAME__|" /etc/hosts
+  
+  # Enable Fail2Ban to block brute-force ips
+  - systemctl enable --now fail2ban
+
+  # Setup firewall:
+  - ufw allow 8822
+  - ufw logging on
+  - ufw enable
+
+  # Disable cloud init
+  - touch /etc/cloud/cloud-init.disabled
+
+  # done setting up
+  - shutdown now
