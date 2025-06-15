@@ -1,13 +1,14 @@
 #!/bin/bash
 
+# template folder is relative to this script not the position where its called
+SCRIPT_BASE=$(dirname "$0")
+
 # provide sensible defaults:
 HOSTNAME=aecloud
 USERNAME=aecloud-admin
 
 IMAGE_SIZE=5G
 IMAGE_OUT=image.qcow2
-
-
 
 
 # parse the arguments provided to the script
@@ -108,12 +109,11 @@ mkdir -p $TEMP_DIR
 
 
 
-
 # create the autoinstall iso
 mkdir -p $TEMP_DIR/autoinstall-iso
 
 touch $TEMP_DIR/autoinstall-iso/meta-data
-cp templates/install/autoinstall.template.yml $TEMP_DIR/autoinstall-iso/user-data
+cp $SCRIPT_BASE/templates/install/autoinstall.template.yml $TEMP_DIR/autoinstall-iso/user-data
 
 # replace template placeholder
 sed -i -e "s|__HOSTNAME__|$HOSTNAME|" $TEMP_DIR/autoinstall-iso/user-data 
@@ -128,9 +128,9 @@ rm -rf $TEMP_DIR/autoinstall-iso
 # create the cloud-init iso
 mkdir -p $TEMP_DIR/cloud-init-iso # used to create the cloud-init-iso.iso
 
-cp templates/setup/user-data.template.yml $TEMP_DIR/cloud-init-iso/user-data
-cp templates/setup/meta-data.template.yml $TEMP_DIR/cloud-init-iso/meta-data
-cp templates/setup/vendor-data.template.yml $TEMP_DIR/cloud-init-iso/vendor-data
+cp $SCRIPT_BASE/templates/setup/user-data.template.yml $TEMP_DIR/cloud-init-iso/user-data
+cp $SCRIPT_BASE/templates/setup/meta-data.template.yml $TEMP_DIR/cloud-init-iso/meta-data
+cp $SCRIPT_BASE/templates/setup/vendor-data.template.yml $TEMP_DIR/cloud-init-iso/vendor-data
 
 # replace template placeholder
 sed -i -e "s|__MAC_ADDRESS__|$MAC_ADDRESS|" $TEMP_DIR/cloud-init-iso/meta-data
