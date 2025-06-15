@@ -11,7 +11,6 @@ IMAGE_SIZE=5G
 IMAGE_OUT=image.qcow2
 
 
-
 # parse the arguments provided to the script
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -110,7 +109,6 @@ mkdir -p $TEMP_DIR
 
 
 
-
 # create the autoinstall iso
 mkdir -p $TEMP_DIR/autoinstall-iso
 
@@ -122,7 +120,7 @@ sed -i -e "s|__HOSTNAME__|$HOSTNAME|" $TEMP_DIR/autoinstall-iso/user-data
 
 genisoimage -output $TEMP_DIR/autoinstall.iso -volid CIDATA -joliet -rock $TEMP_DIR/autoinstall-iso
 
-# rm -rf $TEMP_DIR/autoinstall-iso
+rm -rf $TEMP_DIR/autoinstall-iso
 
 
 
@@ -144,7 +142,7 @@ sed -i -e "s|__PUBLIC_KEY__|$PUBLIC_KEY|" $TEMP_DIR/cloud-init-iso/vendor-data
 
 genisoimage -output $TEMP_DIR/cloud-init.iso -volid CIDATA -joliet -rational-rock $TEMP_DIR/cloud-init-iso
 
-# rm -rf $TEMP_DIR/cloud-init-iso
+rm -rf $TEMP_DIR/cloud-init-iso
 
 
 
